@@ -49,14 +49,27 @@ app.put("/mahasiswa", (req, res) => {
   const sql = `UPDATE mahasiswa set nama_lengkap = (?), kelas= (?),alamat = (?) WHERE nim = (?)`;
 
   db.query(sql, [nama_lengkap, kelas, alamat, nim], (err, fields) => {
-    console.log(fields);
+    if (err) response(500, "invalid", "error", res);
+    if (fields?.affectedRows) {
+      const data = {
+        isSuccess: fields.affectedRows,
+        message: fields.message,
+      };
+      response(200, data, "halaman put", res);
+    } else {
+      response(404, "data invalid", "error", res);
+    }
   });
-
-  response(200, "update test", "halaman put", res);
 });
 
 app.delete("/mahasiswa", (req, res) => {
-  response(200, "halaman delete", res);
+  const { nim } = req.body;
+  const sql = `DELETE FROM mahasiswa WHERE nim = (?)`;
+  db.query(sql, [nim], (err, fields) => {
+    if (err) return response(500, "nim invalid", "error", res);
+    if (fields.affectedRows) response(200, "success", "halaman delete", res);
+    console.log(fields);
+  });
 });
 
 app.listen(port, () => {
